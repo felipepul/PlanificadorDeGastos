@@ -2,11 +2,35 @@ import React from 'react';
 import {Text, View, StyleSheet} from 'react-native';
 import Gasto from './Gasto';
 
-export const ListadoGastos = ({gastos, setModal, setGasto}) => {
+export const ListadoGastos = ({
+  gastos,
+  setModal,
+  setGasto,
+  gastosFiltrados,
+  filtro,
+}) => {
   return (
     <View style={styles.contenedor}>
-      <Text style={styles.titulo}>Listado Gastos</Text>
-      {gastos.length === 0 ? (
+      <Text style={styles.titulo}>GASTOS</Text>
+
+      {filtro
+        ? gastosFiltrados.map(gasto => (
+            <Gasto
+              key={gasto.id}
+              gasto={gasto}
+              setModal={setModal}
+              setGasto={setGasto}
+            />
+          ))
+        : gastos.map(gasto => (
+            <Gasto
+              key={gasto.id}
+              gasto={gasto}
+              setModal={setModal}
+              setGasto={setGasto}
+            />
+          ))}
+      {/* {gastos.length === 0 ? (
         <Text style={styles.noGastos}>No hay gastos</Text>
       ) : (
         gastos.map(gasto => (
@@ -17,13 +41,18 @@ export const ListadoGastos = ({gastos, setModal, setGasto}) => {
             setGasto={setGasto}
           />
         ))
-      )}
+      )} */}
+
+      {gastos.length === 0 ||
+        (gastosFiltrados === 0 && !!filtro && (
+          <Text style={styles.noGastos}>No hay gastos</Text>
+        ))}
     </View>
   );
 };
 const styles = StyleSheet.create({
   contenedor: {
-    marginTop: 70,
+    marginTop: 30,
     marginBottom: 100,
   },
   titulo: {

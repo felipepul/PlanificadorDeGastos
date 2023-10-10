@@ -10,11 +10,18 @@ import {
 import {Picker} from '@react-native-picker/picker';
 import globalStyles from '../styles';
 
-export const FormularioGasto = ({setModal, handleGasto, setGasto, gasto}) => {
+export const FormularioGasto = ({
+  setModal,
+  handleGasto,
+  setGasto,
+  gasto,
+  eliminarGasto,
+}) => {
   const [nombre, setNombre] = useState('');
   const [cantidad, setCantidad] = useState('');
   const [categoria, setCategoria] = useState('');
   const [id, setId] = useState('');
+  const [fecha, setFecha] = useState('');
 
   useEffect(() => {
     if (gasto?.nombre) {
@@ -22,19 +29,27 @@ export const FormularioGasto = ({setModal, handleGasto, setGasto, gasto}) => {
       setCantidad(gasto.cantidad);
       setCategoria(gasto.categoria);
       setId(gasto.id);
+      setFecha(gasto.fecha);
     }
   }, [gasto]);
   return (
     <SafeAreaView style={styles.contenedor}>
-      <View>
+      <View style={styles.contenedorBotones}>
         <Pressable
           onLongPress={() => {
             setModal(false);
             setGasto({});
           }}
-          style={styles.btnCancelar}>
-          <Text style={styles.btnCancelarTexto}>Cancelar</Text>
+          style={[styles.btn, styles.btnCancelar]}>
+          <Text style={styles.btnTexto}>Cancelar</Text>
         </Pressable>
+        {!!id && (
+          <Pressable
+            style={[styles.btn, styles.btnEliminar]}
+            onLongPress={() => eliminarGasto(id)}>
+            <Text style={styles.btnTexto}>Eliminar</Text>
+          </Pressable>
+        )}
       </View>
       <View style={styles.formualario}>
         <Text style={styles.titulo}>
@@ -81,6 +96,8 @@ export const FormularioGasto = ({setModal, handleGasto, setGasto, gasto}) => {
               nombre,
               cantidad,
               categoria,
+              id,
+              fecha,
             })
           }
           style={styles.submitBtn}>
@@ -98,21 +115,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E40AF',
     flex: 1,
   },
-  formualario: {
-    ...globalStyles.contenedor,
+  contenedorBotones: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  btnCancelar: {
-    backgroundColor: '#DB2777',
+  btn: {
     padding: 10,
     marginTop: 30,
     marginHorizontal: 10,
     borderRadius: 10,
+    width: '45%',
   },
-  btnCancelarTexto: {
+  btnCancelar: {
+    backgroundColor: '#DB2777',
+  },
+  btnEliminar: {
+    backgroundColor: 'red',
+  },
+  btnTexto: {
     textAlign: 'center',
     textTransform: 'uppercase',
     fontWeight: 'bold',
     color: '#FFF',
+  },
+  formualario: {
+    ...globalStyles.contenedor,
   },
   titulo: {
     textAlign: 'center',

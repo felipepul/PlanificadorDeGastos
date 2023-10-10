@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
   StyleSheet,
@@ -11,11 +11,13 @@ import {
   Modal,
   // Text,
 } from 'react-native';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Header } from './src/components/Header';
 import { NuevoPresupuesto } from './src/components/NuevoPresupuesto';
 import { ControlPresupuesto } from './src/components/ControlPresupuesto';
 import { FormularioGasto } from './src/components/FormularioGasto';
 import { ListadoGastos } from './src/components/ListadoGastos';
+import { Filtro } from './src/components/Filtro';
 import { generalId } from './src/helpers/index';
 
 const App = () => {
@@ -24,6 +26,21 @@ const App = () => {
   const [gastos, setGastos] = useState([]);
   const [modal, setModal] = useState(false);
   const [gasto, setGasto] = useState({});
+  const [filtro, setFiltro] = useState('');
+  const [gastosFiltrados, setGastosFiltrados] = useState([]);
+
+  // useEffect(() => {
+  //   if (isValidPresupuesto){
+  //     const  guardarPresupuestoStorage = async() => {
+  //       try {
+  //           await AsyncStorage.setItem('planificador_presupuesto',presupuesto);
+  //       } catch (error){
+  //         console.log(error);
+  //       }
+  //     };
+  //   }
+  // }, [isValidPresupuesto]);
+
   const handleNuevoPresupuesto = () => {
     if (Number(presupuesto) > 0) {
       setIsValidPresupuesto(true);
@@ -32,16 +49,37 @@ const App = () => {
     }
   };
 
-  const handleGasto = gasto => {
-    if (Object.values(gasto).includes('')) {
+  const handleGasto = (gasto) => {
+    if ([gasto.nombre, gasto.categoria, gasto.cantidad].includes('')) {
       Alert.alert('Error',
         'todos los campos son obligatorios');
       return;
     }
-    gasto.id = generalId();
-    gasto.fecha = Date.now();
-    setGastos([...gastos, gasto]);
+
+    if (gasto.id) {
+      const gastosActualizados = gastos.map(gastoState => gastoState.id === gasto.id ? gasto : gastoState);
+      setGastos(gastosActualizados);
+    } else {
+      gasto.id = generalId();
+      gasto.fecha = Date.now();
+      setGastos([...gastos, gasto]);
+    }
     setModal(!modal);
+  };
+
+  const eliminarGasto = (id: string | number) => {
+    Alert.alert(
+      '¿Deseas eliminar este gasto?',
+      'Un gasto eliminado no se puede recuperar',
+      [{ text: 'No', style: 'cancel' },
+      {
+        text: 'Si,eliminar', onPress: () => {
+          const gastosActualizados = gastos.filter(gastoState => gastoState.id !== id);
+          setGastos(gastosActualizados);
+          setModal(!modal);
+          setGasto({});
+        },
+      }]);
   };
 
   return (
@@ -60,10 +98,20 @@ const App = () => {
               handleNuevoPresupuesto={handleNuevoPresupuesto} />)}
         </View>
         {isValidPresupuesto && (
-          <ListadoGastos
-            gastos={gastos}
-            setModal={setModal}
-            setGasto={setGasto} />
+          <>
+            <Filtro
+              filtro={filtro}
+              setFiltro={setFiltro}
+              gastos={gastos}
+              setGastosFiltrados={setGastosFiltrados} />
+            <ListadoGastos
+              gastos={gastos}
+              setModal={setModal}
+              setGasto={setGasto}
+              filtro={filtro}
+              gastosFiltrados={gastosFiltrados}
+            />
+          </>
         )}
       </ScrollView>
 
@@ -74,11 +122,13 @@ const App = () => {
             setModal={setModal}
             handleGasto={handleGasto}
             gasto={gasto}
-            setGasto={setGasto} />
+            setGasto={setGasto}
+            eliminarGasto={eliminarGasto} />
         </Modal>
       )}
       {isValidPresupuesto && (
         <Pressable
+          style={styles.pressable}
           onPress={() => setModal(!modal)}>
           <Image
             style={styles.imagen}
@@ -98,12 +148,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B82F6',
     minHeight: 400,
   },
-  imagen: {
+  pressable: {
     width: 60,
     height: 60,
     position: 'absolute',
     bottom: 40,
     right: 30,
+  },
+  imagen: {
+    width: 60,
+    height: 60,
   },
 });
 
